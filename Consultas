@@ -1,0 +1,128 @@
+
+-- a. 
+-- SELEÇÃO COM CONDIÇÕES (WHERE)
+SELECT nome, material, ano_criacao 
+FROM Escultura 
+WHERE material = 'Bronze';
+
+
+-- b.
+-- SELEÇÃO COM MÚLTIPLAS ENTIDADES (JUNÇÕES)
+
+-- INNER JOIN (Interseção completa)
+SELECT 
+    v.nome AS Visitante, 
+    rp.nome AS Area_Visitada, 
+    va.data_hora_entrada
+FROM Visitante v
+INNER JOIN Agendamento a ON v.cpf = a.cpf_visitante
+INNER JOIN Visita_Area va ON a.id_agendamento = va.id_agendamento
+INNER JOIN Regiao_Parque rp ON va.id_area = rp.id_area;
+
+-- LEFT OUTER JOIN (Todas as regiões, mesmo sem esculturas)
+SELECT 
+    rp.nome AS Area, 
+    e.nome AS Escultura
+FROM Regiao_Parque rp
+LEFT JOIN Escultura e ON rp.id_area = e.id_area;
+
+-- RIGHT OUTER JOIN (Prioridade para tabela da direita)
+SELECT 
+    rp.nome AS Area, 
+    e.nome AS Escultura
+FROM Regiao_Parque rp
+RIGHT JOIN Escultura e ON rp.id_area = e.id_area;
+
+-- FULL OUTER JOIN (Simulação com UNION)
+SELECT rp.nome AS Area, e.nome AS Escultura
+FROM Regiao_Parque rp
+LEFT JOIN Escultura e ON rp.id_area = e.id_area
+UNION
+SELECT rp.nome AS Area, e.nome AS Escultura
+FROM Regiao_Parque rp
+RIGHT JOIN Escultura e ON rp.id_area = e.id_area;
+
+
+-- c.
+-- SELEÇÃO COM MÚLTIPLAS ENTIDADES E AGRUPAMENTOS (GROUP BY)
+SELECT 
+    rp.nome AS Area_do_Parque, 
+    COUNT(va.id_visita_area) AS Total_Visitas
+FROM Regiao_Parque rp
+INNER JOIN Visita_Area va ON rp.id_area = va.id_area
+GROUP BY rp.nome
+ORDER BY Total_Visitas DESC;
+
+
+-- d.
+-- SELEÇÃO COM AGRUPAMENTOS E FILTRO ESPECIALIZADO (HAVING)
+SELECT 
+    rp.nome AS Area, 
+    COUNT(va.id_visita_area) AS Quantidade_Visitas
+FROM Regiao_Parque rp
+INNER JOIN Visita_Area va ON rp.id_area = va.id_area
+GROUP BY rp.nome
+HAVING COUNT(va.id_visita_area) > 1;
+
+
+-- e.
+-- SELEÇÃO COM MÚLTIPLAS ENTIDADES E ORDENAÇÃO (ORDER BY)
+SELECT 
+    v.nome AS Visitante, 
+    rp.nome AS Area_Visitada, 
+    va.data_hora_entrada
+FROM Visitante v
+INNER JOIN Agendamento a ON v.cpf = a.cpf_visitante
+INNER JOIN Visita_Area va ON a.id_agendamento = va.id_agendamento
+INNER JOIN Regiao_Parque rp ON va.id_area = rp.id_area
+ORDER BY va.data_hora_entrada ASC;
+
+
+-- f.
+-- SELEÇÃO COM MÚLTIPLAS ENTIDADES E FUNÇÕES NUMÉRICAS
+SELECT 
+    rp.nome AS Area,
+    COUNT(va.id_visita_area) AS Total_Visitas,
+    ROUND(AVG(TIMESTAMPDIFF(MINUTE, va.data_hora_entrada, va.data_hora_saida)), 0) AS Media_Minutos_Permanencia
+FROM Regiao_Parque rp
+INNER JOIN Visita_Area va ON rp.id_area = va.id_area
+GROUP BY rp.nome
+ORDER BY Media_Minutos_Permanencia DESC;
+
+
+-- g.
+-- SELEÇÃO COM MÚLTIPLAS ENTIDADES E FUNÇÕES LITERAIS (STRING)
+SELECT 
+    UPPER(e.nome) AS Obra_Destaque,
+    e.material,
+    CONCAT('Localizada na área: ', rp.nome) AS Localizacao_Formatada
+FROM Escultura e
+INNER JOIN Regiao_Parque rp ON e.id_area = rp.id_area;
+
+
+-- h.
+-- SELEÇÃO COM MÚLTIPLAS ENTIDADES E FUNÇÕES DE DATA
+SELECT 
+    rp.nome AS Area,
+    DATE_FORMAT(va.data_hora_entrada, '%d/%m/%Y') AS Data_Visita,
+    HOUR(va.data_hora_entrada) AS Hora_Chegada,
+    v.nome AS Visitante
+FROM Visita_Area va
+INNER JOIN Regiao_Parque rp ON va.id_area = rp.id_area
+INNER JOIN Agendamento a ON va.id_agendamento = a.id_agendamento
+INNER JOIN Visitante v ON a.cpf_visitante = v.cpf
+ORDER BY Hora_Chegada ASC;
+
+
+-- i.
+-- SELEÇÃO COM MÚLTIPLAS ENTIDADES E UNIÃO (UNION)
+SELECT 
+    nome AS Nome_Item, 
+    'Área de Visitação' AS Categoria
+FROM Regiao_Parque
+UNION
+SELECT 
+    nome AS Nome_Item, 
+    'Obra de Arte' AS Categoria
+FROM Escultura
+ORDER BY Nome_Item;
